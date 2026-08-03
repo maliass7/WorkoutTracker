@@ -1,0 +1,83 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тренировки</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+        }
+
+        .sticker {
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+            width: 250px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .yellow {
+            background-color: yellow;
+            color: #333;
+        }
+        .green {
+            background-color: green;
+            color: white;
+        }
+        .red {
+            background-color: red;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h2>Учет активности</h2>
+
+        <label>Выберите дату: </label>
+        <input type="date" v-model="selectedDate">
+        <button @click="checkActivity">Проверить стикер</button>
+
+        <div v-if="summary" class="sticker" :class="summary.stickerColor.toLowerCase()">
+            {{ summary.message }} <br><br>
+            <small>Потрачено минут: {{ summary.totalMinutes }}</small>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue
+
+        createApp({
+            data() {
+                return {
+                    selectedDate: '2026-08-02',
+                    summary: null
+                }
+            },
+            methods: {
+                async checkActivity() {
+                    try {
+                        const url = `https://localhost:7258/api/Activities/daily-summary?date=${this.selectedDate}`;
+                        const response = await fetch(url);
+
+                        if (response.ok) {
+                            this.summary = await response.json();
+                        } else {
+                            alert("Ошибка при получении данных с сервера.");
+                        }
+                    } catch (error) {
+                        alert("Сервер недоступен. Убедись, что Visual Studio запущена.");
+                        console.error(error);
+                    }
+                }
+            }
+        }).mount('#app')
+    </script>
+
+</body>
+</html>
