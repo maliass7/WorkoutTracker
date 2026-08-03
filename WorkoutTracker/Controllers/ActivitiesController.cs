@@ -124,5 +124,47 @@ namespace WorkoutTracker.Controllers
 
             return NoContent();
         }
+        // 7. GET: api/Activities/daily-summary?date=2026-08-02
+        [HttpGet("daily-summary")]
+        public async Task<ActionResult<DailySummaryDto>> GetDailySummary(DateTime date)
+        {
+            var totalMinutes = await _context.Activities
+                .Where(a => a.Date.Date == date.Date)
+                .SumAsync(a => a.DurationMinutes);
+
+            string color;
+            string message;
+
+            if (totalMinutes < 30)
+            {
+                color = "Yellow";
+                message = "Активность низкая";
+            }
+            else if (totalMinutes <= 90)
+            {
+                color = "Green";
+                message = "Активность в норме";
+            }
+            else
+            {
+                color = "Red";
+                message = "Активность высокая, возможно переутомление";
+            }
+
+            return new DailySummaryDto
+            {
+                Date = date.Date,
+                TotalMinutes = totalMinutes,
+                StickerColor = color,
+                Message = message
+            };
+        }
+    }
+    public class DailySummaryDto
+    {
+        public DateTime Date { get; set; }
+        public int TotalMinutes { get; set; }
+        public string StickerColor { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
     }
 }
